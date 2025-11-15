@@ -3,7 +3,9 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { ArrowLeft, ShoppingBasket, Menu as MenuIcon, X, Plus, Minus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { menuData, categories } from "@/data/menuData";
+// Remove static imports of menu data. We'll source categories and items from a custom hook.
+import { useMenuData } from "@/hooks/useMenuData";
+import { MenuItem } from "@/types/menu";
 import { CartItem } from "@/types/menu";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
@@ -19,7 +21,8 @@ const Menu = () => {
   const [activeCategory, setActiveCategory] = useState("LITTLE THINGS");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [tableInfo, setTableInfo] = useState<string>("");
-  const [selectedItem, setSelectedItem] = useState<typeof menuData[0] | null>(null);
+  // selectedItem uses the MenuItem type from our dynamic menu data
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemQuantity, setItemQuantity] = useState(1);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
@@ -49,6 +52,9 @@ const Menu = () => {
   const [language, toggleLanguage] = useLanguage();
   const t = translations[language];
 
+  // Use custom hook to fetch dynamic menu items and categories
+  const { menuData, categories } = useMenuData();
+
   useEffect(() => {
     const table = searchParams.get("table");
     const mode = searchParams.get("mode");
@@ -63,7 +69,7 @@ const Menu = () => {
     }
   }, [searchParams, navigate]);
 
-  const handleAddToCart = (item: typeof menuData[0], quantity: number = 1) => {
+  const handleAddToCart = (item: MenuItem, quantity: number = 1) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
     
     if (existingItem) {
@@ -95,7 +101,7 @@ const Menu = () => {
     }
   };
 
-  const handleItemClick = (item: typeof menuData[0]) => {
+  const handleItemClick = (item: MenuItem) => {
     setSelectedItem(item);
     setItemQuantity(1);
   };

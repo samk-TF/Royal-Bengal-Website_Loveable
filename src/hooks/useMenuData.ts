@@ -59,10 +59,32 @@ export function useMenuData() {
 
   // Remove a category and any menu items assigned to it.
   const removeCategory = (categoryName: string) => {
-    const filteredCats = categories.filter((c) => c !== categoryName);
-    const filteredItems = menuData.filter((item) => item.category !== categoryName);
-    saveCategories(filteredCats);
-    saveMenu(filteredItems);
+    // When a category is removed, move its items to the "Others" category.
+    const otherCategory = "Others";
+    // Filter out the category to be removed
+    let updatedCats = categories.filter((c) => c !== categoryName);
+    // Ensure the "Others" category exists
+    if (!updatedCats.includes(otherCategory)) {
+      updatedCats = [...updatedCats, otherCategory];
+    }
+    // Reassign items from the removed category to "Others"
+    const reassignedItems = menuData.map((item) =>
+      item.category === categoryName ? { ...item, category: otherCategory } : item
+    );
+    saveCategories(updatedCats);
+    saveMenu(reassignedItems);
+  };
+
+  /**
+   * Reorders categories by moving the element at `fromIndex` to `toIndex`.
+   * Used by the dashboard for drag-and-drop reordering of tabs.
+   */
+  const reorderCategories = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    const newOrder = Array.from(categories);
+    const [moved] = newOrder.splice(fromIndex, 1);
+    newOrder.splice(toIndex, 0, moved);
+    saveCategories(newOrder);
   };
 
   // Rename an existing category and update all items that referenced it.
@@ -114,5 +136,6 @@ export function useMenuData() {
     addItem,
     removeItem,
     updateItem,
+    reorderCategories,
   };
 }

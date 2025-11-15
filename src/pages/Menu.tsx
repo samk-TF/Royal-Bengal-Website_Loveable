@@ -257,12 +257,9 @@ const Menu = () => {
 
       {/* Category Menu Drawer */}
       <Sheet open={isCategoryMenuOpen} onOpenChange={setIsCategoryMenuOpen}>
-        <SheetContent side="left" className="w-80 p-0">
-          <SheetHeader className="p-4 border-b border-border">
-            <SheetClose className="absolute right-4 top-4 rounded-full bg-secondary w-10 h-10 flex items-center justify-center hover:bg-secondary/80">
-              <X className="h-5 w-5" />
-            </SheetClose>
-          </SheetHeader>
+        <SheetContent side="left" className="w-80 p-0 [&>button]:hidden">
+          {/* Header without close icon */}
+          <SheetHeader className="p-4 border-b border-border" />
           <div className="py-4">
             {categories.map((category) => (
               <button
@@ -282,7 +279,7 @@ const Menu = () => {
 
       {/* Settings Menu Drawer */}
       <Sheet open={isSettingsMenuOpen} onOpenChange={setIsSettingsMenuOpen}>
-        <SheetContent side="right" className="w-80 p-0 flex flex-col">
+        <SheetContent side="right" className="w-80 p-0 flex flex-col [&>button]:hidden">
           {/* Remove the default close icon and leave header empty */}
           <SheetHeader className="p-4 border-b border-border">
             {/* intentionally left empty to remove the 'X' close icon */}
@@ -331,7 +328,7 @@ const Menu = () => {
 
       {/* Cart Drawer */}
       <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col">
+        <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col [&>button]:hidden">
           <SheetHeader className="p-4 border-b border-border">
             <SheetClose className="absolute left-4 top-4">
               <ArrowLeft className="h-6 w-6" />
@@ -414,7 +411,8 @@ const Menu = () => {
 
       {/* Service Selection Dialog */}
       <Dialog open={showServiceDialog} onOpenChange={setShowServiceDialog}>
-        <DialogContent className="sm:max-w-md p-0">
+        {/* Hide the default dialog close button in this dialog */}
+        <DialogContent className="sm:max-w-md p-0 [&>button]:hidden">
           <div className="p-6 space-y-4">
             <h3 className="text-lg font-semibold">
               {language === 'en' ? 'Choose service mode' : 'Servicemodus wählen'}

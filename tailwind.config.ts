@@ -18,7 +18,11 @@ export default {
        * to our RoyalBengal display typeface plus a sans-serif fallback.  
        */
       fontFamily: {
+        /**
+         * Royal is reserved for the brand logotype. Axiforma is the default sans-serif font for all text.
+         */
         royal: ['RoyalBengal', 'sans-serif'],
+        sans: ['Axiforma', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

@@ -1,16 +1,25 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
+import { Button as UIButton } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+// Button imported as UIButton to avoid confusion with other buttons
+// across the file when adding the settings sheet
+
 import { useLanguage } from "@/hooks/useLanguage";
 import { translations } from "@/lib/translations";
+import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 const Landing = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [showTableDialog, setShowTableDialog] = useState(false);
   const [selectedTable, setSelectedTable] = useState("");
+
+  // State for the settings sheet on the landing page (triggered by the hamburger menu)
+  const [isLandingSettingsOpen, setIsLandingSettingsOpen] = useState(false);
 
   // language hook to handle German/English translations
   const [language, toggleLanguage] = useLanguage();
@@ -78,7 +87,12 @@ const Landing = () => {
               className="w-8 h-6 cursor-pointer"
               onClick={toggleLanguage}
             />
-            <button className="text-3xl">☰</button>
+            <button
+              className="text-3xl"
+              onClick={() => setIsLandingSettingsOpen(true)}
+            >
+              ☰
+            </button>
           </div>
         </header>
 
@@ -128,16 +142,78 @@ const Landing = () => {
               </SelectContent>
             </Select>
 
-            <Button
+            <UIButton
               onClick={handleValidate}
               disabled={!selectedTable}
               className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base"
             >
               {t.validate}
-            </Button>
+            </UIButton>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Settings sheet for the landing page */}
+      <Sheet open={isLandingSettingsOpen} onOpenChange={setIsLandingSettingsOpen}>
+        <SheetContent side="right" className="w-80 p-0 flex flex-col [&>button]:hidden">
+          {/* Remove default close button */}
+          <SheetHeader className="p-4 border-b border-border" />
+          <div className="flex-1 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">{language === 'en' ? 'English' : 'Deutsch'}</span>
+              <button
+                onClick={toggleLanguage}
+                className="text-sm text-muted-foreground hover:underline"
+              >
+                {language === 'en' ? 'Deutsch' : 'English'}
+              </button>
+            </div>
+            <UIButton className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full py-6">
+              Sign up or sign in
+            </UIButton>
+            <button
+              onClick={() => {
+                setIsLandingSettingsOpen(false);
+                navigate('/');
+              }}
+              className="flex items-center gap-2 text-sm hover:underline"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Home
+            </button>
+          </div>
+          <div className="border-t border-border p-6 space-y-2 text-sm text-muted-foreground">
+            <Link
+              to="/terms-of-sale"
+              onClick={() => setIsLandingSettingsOpen(false)}
+              className="hover:underline block"
+            >
+              Terms of Sale
+            </Link>
+            <Link
+              to="/terms-of-use"
+              onClick={() => setIsLandingSettingsOpen(false)}
+              className="hover:underline block"
+            >
+              Terms of Use
+            </Link>
+            <Link
+              to="/privacy-policy"
+              onClick={() => setIsLandingSettingsOpen(false)}
+              className="hover:underline block"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to="/legal-notice"
+              onClick={() => setIsLandingSettingsOpen(false)}
+              className="hover:underline block"
+            >
+              Legal Notice
+            </Link>
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 };

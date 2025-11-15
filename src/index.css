@@ -20,6 +20,17 @@ All colors MUST be HSL.
   font-display: swap;
 }
 
+/* Register the Axiforma typeface uploaded by the user. This will be used as the default sans-serif font across the site. */
+@font-face {
+  font-family: 'Axiforma';
+  src: url('/fonts/axiforma-regular.woff2') format('woff2'),
+       url('/fonts/axiforma-regular.woff') format('woff'),
+       url('/fonts/axiforma-regular.eot') format('embedded-opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     /* Light mode palette */
@@ -116,6 +127,6 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { ArrowLeft, ShoppingBasket, Menu as MenuIcon, X, Plus, Minus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { menuData, categories } from "@/data/menuData";
 import { CartItem } from "@/types/menu";
@@ -24,6 +25,25 @@ const Menu = () => {
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
   const categoryRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+
+  // Service selection dialog state for switching between takeaway and table service
+  const [showServiceDialog, setShowServiceDialog] = useState(false);
+  const [selectedTableOption, setSelectedTableOption] = useState<string>("");
+  // List of available tables for selection. Duplicate of landing page tables.
+  const tables = [
+    "TERRACE - 101",
+    "TERRACE - 102",
+    "TERRACE - 103",
+    "TERRACE - 104",
+    "TERRACE - 105",
+    "TERRACE - 106",
+    "TERRACE - 107",
+    "TERRACE - 108",
+    "INSIDE - 201",
+    "INSIDE - 202",
+    "INSIDE - 203",
+    "INSIDE - 204",
+  ];
 
   // use language hook for translations
   const [language, toggleLanguage] = useLanguage();
@@ -103,27 +123,40 @@ const Menu = () => {
       {/* Top Bar */}
       <div className="sticky top-0 z-50 bg-background border-b border-border px-4 py-3">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <button
-            onClick={() => navigate("/")}
-            className="w-10 h-10 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-
+          {/* Left side: back button and brand name */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
+            <button
+              onClick={() => navigate("/")}
+              className="w-10 h-10 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="hidden sm:block text-xl font-royal text-foreground leading-tight ml-1">
+              Royal<br />Bengal
+            </div>
+          </div>
+          {/* Right side: service selection, cart, language and settings */}
+          <div className="flex items-center gap-3">
+            {/* Clickable service/table pill */}
+            <div
+              onClick={() => setShowServiceDialog(true)}
+              className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full cursor-pointer"
+            >
               <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-sm">
                 🏪
               </div>
-              <span className="text-sm font-medium">{t.tableService}</span>
+              <span className="text-sm font-medium">
+                {tableInfo === 'TAKEAWAY'
+                  ? (language === 'en' ? 'To-go' : 'Mitnehmen')
+                  : t.tableService}
+              </span>
             </div>
-            
-            <div className="bg-secondary px-4 py-2 rounded-full font-medium text-sm">
+            <div
+              onClick={() => setShowServiceDialog(true)}
+              className="bg-secondary px-4 py-2 rounded-full font-medium text-sm cursor-pointer"
+            >
               {tableInfo}
             </div>
-          </div>
-
-          <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsCartOpen(true)}
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full font-semibold flex items-center gap-2"
@@ -250,15 +283,20 @@ const Menu = () => {
       {/* Settings Menu Drawer */}
       <Sheet open={isSettingsMenuOpen} onOpenChange={setIsSettingsMenuOpen}>
         <SheetContent side="right" className="w-80 p-0 flex flex-col">
+          {/* Remove the default close icon and leave header empty */}
           <SheetHeader className="p-4 border-b border-border">
-            <SheetClose className="absolute left-4 top-4 rounded-sm opacity-70 hover:opacity-100">
-              <X className="h-5 w-5" />
-            </SheetClose>
+            {/* intentionally left empty to remove the 'X' close icon */}
           </SheetHeader>
           <div className="flex-1 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <span className="font-medium">{language === 'en' ? 'English' : 'Deutsch'}</span>
-              <button className="text-sm text-muted-foreground">▼</button>
+              {/* Toggle language button shows the other language as the option */}
+              <button
+                onClick={toggleLanguage}
+                className="text-sm text-muted-foreground hover:underline"
+              >
+                {language === 'en' ? 'Deutsch' : 'English'}
+              </button>
             </div>
             <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full py-6">
               Sign up or sign in
@@ -275,13 +313,18 @@ const Menu = () => {
             </button>
           </div>
           <div className="border-t border-border p-6 space-y-2 text-sm text-muted-foreground">
-            <div>Terms of Sale</div>
-            <div>Terms of Use</div>
-            <div>Privacy Policy</div>
-            <div>Legal Notice</div>
-          </div>
-          <div className="p-4 text-xs text-muted-foreground text-center">
-            Powered by DOOD
+            <Link to="/terms-of-sale" onClick={() => setIsSettingsMenuOpen(false)} className="hover:underline block">
+              Terms of Sale
+            </Link>
+            <Link to="/terms-of-use" onClick={() => setIsSettingsMenuOpen(false)} className="hover:underline block">
+              Terms of Use
+            </Link>
+            <Link to="/privacy-policy" onClick={() => setIsSettingsMenuOpen(false)} className="hover:underline block">
+              Privacy Policy
+            </Link>
+            <Link to="/legal-notice" onClick={() => setIsSettingsMenuOpen(false)} className="hover:underline block">
+              Legal Notice
+            </Link>
           </div>
         </SheetContent>
       </Sheet>
@@ -368,6 +411,52 @@ const Menu = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Service Selection Dialog */}
+      <Dialog open={showServiceDialog} onOpenChange={setShowServiceDialog}>
+        <DialogContent className="sm:max-w-md p-0">
+          <div className="p-6 space-y-4">
+            <h3 className="text-lg font-semibold">
+              {language === 'en' ? 'Choose service mode' : 'Servicemodus wählen'}
+            </h3>
+            {/* Takeaway option */}
+            <Button
+              onClick={() => {
+                navigate('/menu?mode=takeaway');
+                setShowServiceDialog(false);
+              }}
+              className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-full py-3 font-medium"
+            >
+              {language === 'en' ? 'To-go' : 'Mitnehmen'}
+            </Button>
+            {/* Table selection */}
+            <Select value={selectedTableOption} onValueChange={setSelectedTableOption}>
+              <SelectTrigger className="w-full h-12">
+                <SelectValue placeholder={t.selectTable} />
+              </SelectTrigger>
+              <SelectContent>
+                {tables.map((table) => (
+                  <SelectItem key={table} value={table}>
+                    {table}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={() => {
+                if (selectedTableOption) {
+                  navigate(`/menu?table=${selectedTableOption}`);
+                }
+                setShowServiceDialog(false);
+              }}
+              disabled={!selectedTableOption}
+              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-full"
+            >
+              {t.validate}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Item Detail Dialog */}
       <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>

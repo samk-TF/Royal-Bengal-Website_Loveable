@@ -12,6 +12,8 @@ export const translations = {
     orderOverview: "Overview",
     emptyCart: "Your cart is empty.",
     continue: "Continue",
+    /** Label for takeaway / to-go mode */
+    takeaway: "To-go",
   },
   de: {
     slogan: "Der beste Weg zum Herzen führt durch den Magen",
@@ -26,6 +28,8 @@ export const translations = {
     orderOverview: "Übersicht",
     emptyCart: "Dein Warenkorb ist leer.",
     continue: "Weiter",
+    /** Label for takeaway / to-go mode */
+    takeaway: "Mitnehmen",
   },
 } as const;
 

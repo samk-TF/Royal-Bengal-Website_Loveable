@@ -31,8 +31,14 @@ const Landing = () => {
     return null;
   }
 
-  const handleMenuClick = () => {
+  // When the user chooses table service, open the table selection dialog
+  const handleTableServiceClick = () => {
     setShowTableDialog(true);
+  };
+
+  // When the user chooses takeaway, navigate directly to the menu in takeaway mode
+  const handleToGoClick = () => {
+    navigate("/menu?mode=takeaway");
   };
 
   const handleValidate = () => {
@@ -83,15 +89,19 @@ const Landing = () => {
           </h1>
 
           <div className="flex flex-col items-center gap-8">
+            {/* Button to choose table service and select a table */}
             <button
-              onClick={handleMenuClick}
+              onClick={handleTableServiceClick}
               className="w-48 h-48 md:w-56 md:h-56 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-2xl md:text-3xl transition-transform hover:scale-105"
             >
-              {t.menuButton}
+              {t.tableService}
             </button>
-
-            <button className="w-48 h-48 md:w-56 md:h-56 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-2xl md:text-3xl transition-transform hover:scale-105">
-              {t.payButton}
+            {/* Button to choose takeaway mode and navigate directly to the menu */}
+            <button
+              onClick={handleToGoClick}
+              className="w-48 h-48 md:w-56 md:h-56 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-2xl md:text-3xl transition-transform hover:scale-105"
+            >
+              {t.takeaway}
             </button>
           </div>
         </main>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ShoppingBasket, Menu as MenuIcon, X, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ const Menu = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
+  const categoryRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
   useEffect(() => {
     const table = searchParams.get("table");
@@ -71,9 +72,23 @@ const Menu = () => {
     setItemQuantity(1);
   };
 
+  const scrollToCategory = (category: string) => {
+    const element = categoryRefs.current[category];
+    if (element) {
+      const offset = 130; // Account for sticky headers
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+      setActiveCategory(category);
+    }
+  };
+
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const filteredItems = menuData.filter(item => item.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-background">
@@ -131,7 +146,7 @@ const Menu = () => {
           {categories.map((category) => (
             <button
               key={category}
-              onClick={() => setActiveCategory(category)}
+              onClick={() => scrollToCategory(category)}
               className={`px-4 py-2 whitespace-nowrap font-medium transition-colors shrink-0 ${
                 activeCategory === category
                   ? "text-foreground border-b-2 border-foreground"
@@ -146,34 +161,46 @@ const Menu = () => {
 
       {/* Menu Items */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <h2 className="text-3xl font-bold mb-8">{activeCategory}</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredItems.map((item) => (
-            <div key={item.id} className="space-y-3">
-              <div className="space-y-2">
-                <h3 className="font-bold text-base leading-tight">{item.name}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-                <p className="font-semibold">€{item.price.toFixed(2)}</p>
-              </div>
+        {categories.map((category) => {
+          const categoryItems = menuData.filter(item => item.category === category);
+          
+          return (
+            <section 
+              key={category}
+              ref={(el) => categoryRefs.current[category] = el}
+              className="mb-16"
+            >
+              <h2 className="text-3xl font-bold mb-8">{category}</h2>
               
-              <button
-                onClick={() => handleItemClick(item)}
-                className="w-full aspect-square rounded-3xl bg-accent hover:bg-accent/90 transition-colors overflow-hidden relative group"
-              >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  onError={(e) => {
-                    e.currentTarget.src = "https://placehold.co/400x400/00a8e8/ffffff?text=" + item.id;
-                  }}
-                />
-                <div className="absolute inset-0 bg-accent/20 group-hover:bg-accent/30 transition-colors" />
-              </button>
-            </div>
-          ))}
-        </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
+                {categoryItems.map((item) => (
+                  <div key={item.id} className="flex flex-col">
+                    <div className="space-y-2 mb-3">
+                      <h3 className="font-bold text-base leading-tight">{item.name}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+                      <p className="font-semibold">€{item.price.toFixed(2)}</p>
+                    </div>
+                    
+                    <button
+                      onClick={() => handleItemClick(item)}
+                      className="w-full aspect-square rounded-3xl bg-accent hover:bg-accent/90 transition-colors overflow-hidden relative group"
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://placehold.co/400x400/00a8e8/ffffff?text=" + item.id;
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-accent/20 group-hover:bg-accent/30 transition-colors" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </main>
 
       {/* Category Menu Drawer */}
@@ -189,7 +216,7 @@ const Menu = () => {
               <button
                 key={category}
                 onClick={() => {
-                  setActiveCategory(category);
+                  scrollToCategory(category);
                   setIsCategoryMenuOpen(false);
                 }}
                 className="w-full text-left px-6 py-3 hover:bg-secondary/50 transition-colors font-medium"

@@ -8,6 +8,10 @@ import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 
+// Language support
+import { useLanguage } from "@/hooks/useLanguage";
+import { translations } from "@/lib/translations";
+
 const Menu = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -20,6 +24,10 @@ const Menu = () => {
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
   const categoryRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+
+  // use language hook for translations
+  const [language, toggleLanguage] = useLanguage();
+  const t = translations[language];
 
   useEffect(() => {
     const table = searchParams.get("table");
@@ -107,7 +115,7 @@ const Menu = () => {
               <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-sm">
                 🏪
               </div>
-              <span className="text-sm font-medium">Table service</span>
+              <span className="text-sm font-medium">{t.tableService}</span>
             </div>
             
             <div className="bg-secondary px-4 py-2 rounded-full font-medium text-sm">
@@ -121,9 +129,15 @@ const Menu = () => {
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full font-semibold flex items-center gap-2"
             >
               <ShoppingBasket className="w-4 h-4" />
-              Basket ({totalItems})
+              {t.basket(totalItems)}
             </button>
-            <img src="https://flagcdn.com/w40/fr.png" alt="French" className="w-8 h-6" />
+            {/* Language toggle flag */}
+            <img
+              src={language === 'en' ? 'https://flagcdn.com/w40/de.png' : 'https://flagcdn.com/w40/gb.png'}
+              alt={language === 'en' ? 'Deutsch' : 'English'}
+              className="w-8 h-6 cursor-pointer"
+              onClick={toggleLanguage}
+            />
             <button 
               onClick={() => setIsSettingsMenuOpen(true)}
               className="text-2xl"
@@ -172,28 +186,33 @@ const Menu = () => {
             >
               <h2 className="text-3xl font-bold mb-8">{category}</h2>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6">
                 {categoryItems.map((item) => (
-                  <div key={item.id} className="flex flex-col">
-                    <div className="space-y-2 mb-3">
-                      <h3 className="font-bold text-base leading-tight">{item.name}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-                      <p className="font-semibold">€{item.price.toFixed(2)}</p>
+                  <div
+                    key={item.id}
+                    className="flex h-40 overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+                  >
+                    {/* Left side: details */}
+                    <div className="flex-1 p-4 flex flex-col justify-between">
+                      <div>
+                        <h3 className="font-bold text-base leading-snug mb-1">{item.name}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+                      </div>
+                      <p className="font-semibold mt-2">€{item.price.toFixed(2)}</p>
                     </div>
-                    
+                    {/* Right side: image as button */}
                     <button
                       onClick={() => handleItemClick(item)}
-                      className="w-full aspect-square rounded-3xl bg-accent hover:bg-accent/90 transition-colors overflow-hidden relative group"
+                      className="w-32 sm:w-36 h-full flex-shrink-0 bg-accent hover:bg-accent/90 transition-colors"
                     >
                       <img
                         src={item.image}
                         alt={item.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        className="h-full w-full object-cover"
                         onError={(e) => {
                           e.currentTarget.src = "https://placehold.co/400x400/00a8e8/ffffff?text=" + item.id;
                         }}
                       />
-                      <div className="absolute inset-0 bg-accent/20 group-hover:bg-accent/30 transition-colors" />
                     </button>
                   </div>
                 ))}
@@ -238,7 +257,7 @@ const Menu = () => {
           </SheetHeader>
           <div className="flex-1 p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="font-medium">English</span>
+              <span className="font-medium">{language === 'en' ? 'English' : 'Deutsch'}</span>
               <button className="text-sm text-muted-foreground">▼</button>
             </div>
             <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full py-6">
@@ -274,19 +293,19 @@ const Menu = () => {
             <SheetClose className="absolute left-4 top-4">
               <ArrowLeft className="h-6 w-6" />
             </SheetClose>
-            <SheetTitle className="text-center">My order</SheetTitle>
+            <SheetTitle className="text-center">{t.myOrder}</SheetTitle>
           </SheetHeader>
           
           <div className="flex-1 overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-3xl font-bold mb-6">My order</h2>
+              <h2 className="text-3xl font-bold mb-6">{t.myOrder}</h2>
               
               <div className="flex items-center justify-between bg-secondary/30 p-4 rounded-2xl mb-6">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center">
                     🏪
                   </div>
-                  <span className="font-medium">Table service</span>
+                  <span className="font-medium">{t.tableService}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-secondary px-4 py-2 rounded-full">
                   <div className="w-8 h-8 bg-primary/20 rounded-full" />
@@ -296,11 +315,11 @@ const Menu = () => {
               </div>
 
               <div className="bg-secondary/20 rounded-2xl p-6">
-                <h3 className="text-xl font-bold mb-4">Overview</h3>
+                <h3 className="text-xl font-bold mb-4">{t.orderOverview}</h3>
                 
                 {cart.length === 0 ? (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center text-sm mb-4">
-                    Your cart is empty.
+                    {t.emptyCart}
                   </div>
                 ) : (
                   <div className="space-y-4 mb-4">
@@ -342,7 +361,7 @@ const Menu = () => {
                   className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-full py-6"
                   disabled={cart.length === 0}
                 >
-                  Continue
+                  {t.continue}
                 </Button>
               </div>
             </div>
@@ -398,7 +417,7 @@ const Menu = () => {
                     onClick={() => handleAddToCart(selectedItem, itemQuantity)}
                     className="flex-1 ml-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-full py-6"
                   >
-                    Open at 7:00pm
+                    {t.addToBasket}
                   </Button>
                 </div>
               </div>

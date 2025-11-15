@@ -13,6 +13,13 @@ export default {
       },
     },
     extend: {
+      /**
+       * Custom font families. We register the "royal" font to map
+       * to our RoyalBengal display typeface plus a sans-serif fallback.  
+       */
+      fontFamily: {
+        royal: ['RoyalBengal', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

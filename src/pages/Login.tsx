@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
  * dashboard. If already authenticated, redirect to the dashboard.
  */
 const Login = () => {
-  const { authenticated, login } = useAuth();
+  const { authenticated, loading, login } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -18,10 +18,10 @@ const Login = () => {
 
   // Redirect authenticated users to the dashboard
   useEffect(() => {
-    if (authenticated) {
+    if (!loading && authenticated) {
       navigate("/dashboard");
     }
-  }, [authenticated, navigate]);
+  }, [authenticated, loading, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +32,15 @@ const Login = () => {
       setError("Invalid username or password");
     }
   };
+
+  // Show nothing while checking authentication to prevent bouncing
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background text-foreground p-4">

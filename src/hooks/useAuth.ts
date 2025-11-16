@@ -7,11 +7,13 @@ import { useState, useEffect } from "react";
  */
 export function useAuth() {
   const [authenticated, setAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Load authentication state from localStorage on mount.
   useEffect(() => {
     const stored = localStorage.getItem("auth");
     setAuthenticated(stored === "true");
+    setLoading(false);
   }, []);
 
   /**
@@ -36,5 +38,5 @@ export function useAuth() {
     localStorage.removeItem("auth");
   };
 
-  return { authenticated, login, logout };
+  return { authenticated, loading, login, logout };
 }

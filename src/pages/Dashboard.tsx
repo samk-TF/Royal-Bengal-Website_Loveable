@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
-import { X, Trash2, Plus as PlusIcon, Edit, Calculator } from "lucide-react";
+import { X, Trash2, Plus as PlusIcon, Edit, Calculator, Pencil } from "lucide-react";
 
 /**
  * Dashboard page mimicking the menu UI but with drag-and-drop category
@@ -62,6 +62,10 @@ const Dashboard = () => {
   const [formDescription, setFormDescription] = useState<string>("");
   const [formPrice, setFormPrice] = useState<string>("");
   const [formImage, setFormImage] = useState<string>("");
+
+  // Category editing state
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState<string>("");
 
   // Update active category when categories list changes
   useEffect(() => {
@@ -175,6 +179,26 @@ const Dashboard = () => {
     }
   };
 
+  /**
+   * Start editing a category name
+   */
+  const startEditingCategory = (category: string) => {
+    if (category === "Others") return; // Don't allow editing "Others"
+    setEditingCategory(category);
+    setEditCategoryName(category);
+  };
+
+  /**
+   * Save the edited category name
+   */
+  const saveEditedCategory = () => {
+    if (!editCategoryName.trim() || !editingCategory) return;
+    // This would need to be implemented in useMenuData hook
+    // For now, just close the editing mode
+    setEditingCategory(null);
+    setEditCategoryName("");
+  };
+
   // Build a lookup of items by category to avoid repeated filtering
   const itemsByCategory: { [key: string]: MenuItem[] } = {};
   categories.forEach((cat) => {
@@ -262,7 +286,49 @@ const Dashboard = () => {
             ref={(el) => (categoryRefs.current[cat] = el)}
             className="space-y-6"
           >
-            <h2 className="text-3xl font-bold">{cat}</h2>
+            <div className="flex items-center gap-3">
+              {editingCategory === cat ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={editCategoryName}
+                    onChange={(e) => setEditCategoryName(e.target.value)}
+                    className="text-3xl font-bold h-12"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") saveEditedCategory();
+                      if (e.key === "Escape") setEditingCategory(null);
+                    }}
+                    autoFocus
+                  />
+                  <Button
+                    onClick={saveEditedCategory}
+                    size="sm"
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    onClick={() => setEditingCategory(null)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-3xl font-bold">{cat}</h2>
+                  {cat !== "Others" && (
+                    <button
+                      onClick={() => startEditingCategory(cat)}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label="Edit category name"
+                    >
+                      <Pencil className="w-5 h-5" />
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {itemsByCategory[cat] &&
                 itemsByCategory[cat].map((item) => (
@@ -307,9 +373,6 @@ const Dashboard = () => {
         <DialogContent className="max-w-lg p-0 overflow-hidden">
           <div className="flex justify-between items-center p-4 border-b border-border bg-secondary">
             <DialogTitle>{editingItem ? "Edit Item" : "Add Item"}</DialogTitle>
-            <DialogClose asChild>
-              <button className="text-lg"><X /></button>
-            </DialogClose>
           </div>
           {/* Image preview and change button */}
           <div className="p-6 space-y-4">

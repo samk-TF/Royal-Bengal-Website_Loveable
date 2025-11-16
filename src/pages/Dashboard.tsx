@@ -37,6 +37,7 @@ const Dashboard = () => {
     reorderCategories,
     addItem,
     updateItem,
+    reorderItems,
   } = useMenuData();
 
   // Redirect to login if not authenticated
@@ -50,6 +51,10 @@ const Dashboard = () => {
   const [activeCategory, setActiveCategory] = useState<string>("");
   // Drag state for categories
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  
+  // Drag state for items
+  const [dragItemIndex, setDragItemIndex] = useState<number | null>(null);
+  const [dragItemCategory, setDragItemCategory] = useState<string | null>(null);
 
   // Refs for category positions for scrolling
   const categoryRefs = useRef<{ [key: string]: HTMLElement | null }>({});
@@ -331,20 +336,45 @@ const Dashboard = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {itemsByCategory[cat] &&
-                itemsByCategory[cat].map((item) => (
+                itemsByCategory[cat].map((item, index) => (
                   <div
                     key={item.id}
+                    draggable
+                    onDragStart={(e) => {
+                      e.stopPropagation();
+                      setDragItemIndex(index);
+                      setDragItemCategory(cat);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (dragItemIndex !== null && dragItemCategory === cat && dragItemIndex !== index) {
+                        reorderItems(cat, dragItemIndex, index);
+                      }
+                      setDragItemIndex(null);
+                      setDragItemCategory(null);
+                    }}
+                    onDragEnd={() => {
+                      setDragItemIndex(null);
+                      setDragItemCategory(null);
+                    }}
                     onClick={() => openItemDialog(item, cat)}
-                    className="cursor-pointer flex h-40 overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+                    className={`cursor-move flex h-40 overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow ${
+                      dragItemIndex === index && dragItemCategory === cat ? 'opacity-50' : ''
+                    }`}
                   >
-                    <div className="flex-1 p-4 flex flex-col justify-between">
+                    <div className="flex-1 p-4 flex flex-col justify-between pointer-events-none">
                       <div>
                         <h3 className="font-bold text-base leading-snug mb-1 line-clamp-2">{item.name}</h3>
                         <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
                       </div>
                       <p className="font-semibold mt-2">€{item.price.toFixed(2)}</p>
                     </div>
-                    <div className="w-32 sm:w-36 h-full flex-shrink-0 bg-accent">
+                    <div className="w-32 sm:w-36 h-full flex-shrink-0 bg-accent pointer-events-none">
                       <img
                         src={item.image}
                         alt={item.name}
@@ -386,7 +416,7 @@ const Dashboard = () => {
                 }}
               />
             )}
-            <Button onClick={handleChangePhoto} className="bg-secondary hover:bg-secondary/80 w-full">
+            <Button onClick={handleChangePhoto} className="bg-primary hover:bg-primary/90 text-primary-foreground w-full">
               {formImage ? "Change Photo" : "Add/Replace Photo"}
             </Button>
 

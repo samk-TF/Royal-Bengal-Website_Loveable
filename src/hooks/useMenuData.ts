@@ -127,6 +127,22 @@ export function useMenuData() {
     saveMenu(updated);
   };
 
+  // Reorder items within a category
+  const reorderItems = (category: string, fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    
+    // Get all items in this category
+    const categoryItems = menuData.filter(item => item.category === category);
+    const otherItems = menuData.filter(item => item.category !== category);
+    
+    // Reorder within the category
+    const [moved] = categoryItems.splice(fromIndex, 1);
+    categoryItems.splice(toIndex, 0, moved);
+    
+    // Combine back and save
+    saveMenu([...otherItems, ...categoryItems]);
+  };
+
   return {
     menuData,
     categories,
@@ -137,5 +153,6 @@ export function useMenuData() {
     removeItem,
     updateItem,
     reorderCategories,
+    reorderItems,
   };
 }

@@ -28,6 +28,8 @@ const Menu = () => {
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
   const categoryRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const categoryButtonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
   // Service selection dialog state for switching between takeaway and table service
   const [showServiceDialog, setShowServiceDialog] = useState(false);
@@ -68,6 +70,21 @@ const Menu = () => {
       navigate("/");
     }
   }, [searchParams, navigate]);
+
+  // Update indicator position when active category changes
+  useEffect(() => {
+    const activeButton = categoryButtonRefs.current[activeCategory];
+    if (activeButton) {
+      const containerRect = activeButton.parentElement?.getBoundingClientRect();
+      const buttonRect = activeButton.getBoundingClientRect();
+      if (containerRect) {
+        setIndicatorStyle({
+          left: buttonRect.left - containerRect.left,
+          width: buttonRect.width
+        });
+      }
+    }
+  }, [activeCategory, categories]);
 
   const handleAddToCart = (item: MenuItem, quantity: number = 1) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
@@ -188,8 +205,8 @@ const Menu = () => {
       </div>
 
       {/* Category Navigation */}
-      <div className="sticky top-[65px] z-40 bg-background border-b border-border overflow-x-auto">
-        <div className="flex gap-1 px-4 py-3 max-w-7xl mx-auto">
+      <div className="sticky top-[65px] z-40 bg-background border-b border-border">
+        <div className="relative flex gap-1 px-4 py-3 max-w-7xl mx-auto">
           <button 
             onClick={() => setIsCategoryMenuOpen(true)}
             className="p-2 hover:bg-secondary rounded-lg shrink-0"
@@ -199,16 +216,25 @@ const Menu = () => {
           {categories.map((category) => (
             <button
               key={category}
+              ref={(el) => categoryButtonRefs.current[category] = el}
               onClick={() => scrollToCategory(category)}
               className={`px-4 py-2 whitespace-nowrap font-medium transition-colors shrink-0 ${
                 activeCategory === category
-                  ? "text-foreground border-b-2 border-foreground"
+                  ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {category}
             </button>
           ))}
+          {/* Sliding indicator */}
+          <div 
+            className="absolute bottom-0 h-0.5 bg-foreground transition-all duration-300 ease-out"
+            style={{ 
+              left: `${indicatorStyle.left}px`, 
+              width: `${indicatorStyle.width}px` 
+            }}
+          />
         </div>
       </div>
 

@@ -71,6 +71,35 @@ const Menu = () => {
     }
   }, [searchParams, navigate]);
 
+  // Observe category sections and update active category on scroll
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-130px 0px -50% 0px', // Account for sticky headers
+      threshold: 0
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const category = entry.target.getAttribute('data-category');
+          if (category) {
+            setActiveCategory(category);
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    // Observe all category sections
+    Object.values(categoryRefs.current).forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => observer.disconnect();
+  }, [categories]);
+
   // Update indicator position when active category changes
   useEffect(() => {
     const activeButton = categoryButtonRefs.current[activeCategory];
@@ -247,6 +276,7 @@ const Menu = () => {
             <section 
               key={category}
               ref={(el) => categoryRefs.current[category] = el}
+              data-category={category}
               className="mb-16"
             >
               <h2 className="text-3xl font-bold mb-8">{category}</h2>

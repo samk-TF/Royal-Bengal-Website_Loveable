@@ -30,6 +30,7 @@ const Menu = () => {
   const categoryRefs = useRef<{ [key: string]: HTMLElement | null }>({});
   const categoryButtonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const isManualScrolling = useRef(false);
 
   // Service selection dialog state for switching between takeaway and table service
   const [showServiceDialog, setShowServiceDialog] = useState(false);
@@ -80,6 +81,9 @@ const Menu = () => {
     };
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      // Skip observer updates during manual scrolling
+      if (isManualScrolling.current) return;
+      
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const category = entry.target.getAttribute('data-category');
@@ -155,6 +159,9 @@ const Menu = () => {
   const scrollToCategory = (category: string) => {
     const element = categoryRefs.current[category];
     if (element) {
+      // Disable observer during manual scroll
+      isManualScrolling.current = true;
+      
       const offset = 130; // Account for sticky headers
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
@@ -164,6 +171,11 @@ const Menu = () => {
         behavior: 'smooth'
       });
       setActiveCategory(category);
+      
+      // Re-enable observer after scroll completes
+      setTimeout(() => {
+        isManualScrolling.current = false;
+      }, 800);
     }
   };
 

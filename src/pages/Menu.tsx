@@ -77,21 +77,31 @@ const Menu = () => {
     const observerOptions = {
       root: null,
       rootMargin: '-130px 0px -50% 0px', // Account for sticky headers
-      threshold: 0
+      threshold: [0, 0.25, 0.5, 0.75, 1]
     };
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
       // Skip observer updates during manual scrolling
       if (isManualScrolling.current) return;
       
+      // Find the most visible section
+      let mostVisible: IntersectionObserverEntry | null = null;
+      let maxRatio = 0;
+      
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const category = entry.target.getAttribute('data-category');
-          if (category) {
-            setActiveCategory(category);
-          }
+        if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
+          maxRatio = entry.intersectionRatio;
+          mostVisible = entry;
         }
       });
+      
+      // If we found a visible section, update active category
+      if (mostVisible) {
+        const category = mostVisible.target.getAttribute('data-category');
+        if (category) {
+          setActiveCategory(category);
+        }
+      }
     };
 
     const observer = new IntersectionObserver(observerCallback, observerOptions);
@@ -183,7 +193,7 @@ const Menu = () => {
   const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background w-full max-w-7xl mx-auto">
       {/* Top Bar */}
       <div className="sticky top-0 z-50 bg-background border-b border-border px-4 py-3">
         <div className="flex items-center justify-between max-w-7xl mx-auto">

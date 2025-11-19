@@ -76,31 +76,36 @@ const Menu = () => {
   useEffect(() => {
     const observerOptions = {
       root: null,
-      rootMargin: '-130px 0px -50% 0px', // Account for sticky headers
-      threshold: [0, 0.25, 0.5, 0.75, 1]
+      rootMargin: '-150px 0px -60% 0px', // Focus on top portion of viewport
+      threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5]
     };
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
       // Skip observer updates during manual scrolling
       if (isManualScrolling.current) return;
       
-      // Find the most visible section
-      let mostVisible: IntersectionObserverEntry | null = null;
-      let maxRatio = 0;
+      // Get all currently intersecting sections with their positions
+      const intersectingSections = entries
+        .filter(entry => entry.isIntersecting)
+        .map(entry => ({
+          category: entry.target.getAttribute('data-category'),
+          top: entry.boundingClientRect.top,
+          intersectionRatio: entry.intersectionRatio
+        }))
+        .filter(section => section.category);
       
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
-          maxRatio = entry.intersectionRatio;
-          mostVisible = entry;
-        }
+      if (intersectingSections.length === 0) return;
+      
+      // Find the section whose top edge is closest to the top of the viewport (after accounting for header)
+      // The section with the smallest positive top value is the one we're viewing
+      const topSection = intersectingSections.reduce((closest, current) => {
+        const closestTop = Math.abs(closest.top);
+        const currentTop = Math.abs(current.top);
+        return currentTop < closestTop ? current : closest;
       });
       
-      // If we found a visible section, update active category
-      if (mostVisible) {
-        const category = mostVisible.target.getAttribute('data-category');
-        if (category) {
-          setActiveCategory(category);
-        }
+      if (topSection.category) {
+        setActiveCategory(topSection.category);
       }
     };
 
